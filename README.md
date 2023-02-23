@@ -1,7 +1,7 @@
 # VectOpt - Vectorized Portfolio Optimization Library
 
 VectOpt is a Python library that provides vectorized implementation of two meta-heuristic optimization algorithms for portfolio selection: Differential Evolutionary (DE) and Dispersive Flies Optimization (DFO).
-Re
+
 DE is an efficient version of Evolutionary Algorithms (EAs) that uses difference vectors among candidate solutions to sample the problem space. DFO is a Swarm Intelligence-based metaheuristic that simulates the swarming behavior of flies over food sources in nature.
 
 VectOpt is designed to be used for portfolio optimization tasks, such as asset allocation. The library is designed to be computationally efficient, using matrix operations to minimize the use of for-loops, and allowing for parallelization on GPUs.
