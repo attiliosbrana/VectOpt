@@ -21,26 +21,32 @@ Here is a simple example of how to use VectOpt to optimize a portfolio using the
 ```python
 import vectopt as vo
 import numpy as np
+from numba import njit, prange
 
-# Define the portfolio optimization problem
-def get_fitness(assets, weights):
-    returns = np.dot(assets, weights)
-    risk = np.dot(weights, np.dot(assets, assets)) ** 0.5
-    return returns / risk
+@njit
+def get_fitness(assets, population):
+    """ calculates the sharpe ratio of the portfolio """
+    t_population = np.ascontiguousarray(population.T)
+    dot = vo.get_dot(assets, t_population)
+    ratios = []
+    for i in prange(dot.shape[1]):
+        ratios.append(dot[:, i].mean() / dot[:, i].std())
+    return np.array(ratios)
 
-assets = np.random.randn(100, 10)
+#make 10 random assets but only with positive values, and 100 observations
+assets = np.random.rand(100, 10)
 sol_size = assets.shape[1]
 pop_size = 100
 rounds = 100
 min_gens = 20
 early_stopping = 10
-min_thresh = 0.001
+min_thresh = 0.01
 
 # Run the DE optimization algorithm
-best_fit, best_sol = vo.DE_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_stopping, min_thresh)
+hof_fit, hof_pop = vo.DE_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_stopping, min_thresh)
 
-print(f"Best fitness: {best_fit[-1]}")
-print(f"Best solution: {best_sol[-1]}")
+print(f"Best fitness: {hof_fit[-1]}")
+print(f"Best solution: {hof_pop[-1]}")
 ```
 
 
@@ -49,26 +55,32 @@ Here is a similar example using the DFO algorithm:
 ```python
 import vectopt as vo
 import numpy as np
+from numba import njit, prange
 
-# Define the portfolio optimization problem
-def get_fitness(assets, weights):
-    returns = np.dot(assets, weights)
-    risk = np.dot(weights, np.dot(assets, assets)) ** 0.5
-    return returns / risk
+@njit
+def get_fitness(assets, population):
+    """ calculates the sharpe ratio of the portfolio """
+    t_population = np.ascontiguousarray(population.T)
+    dot = vo.get_dot(assets, t_population)
+    ratios = []
+    for i in prange(dot.shape[1]):
+        ratios.append(dot[:, i].mean() / dot[:, i].std())
+    return np.array(ratios)
 
-assets = np.random.randn(100, 10)
+#make 10 random assets but only with positive values, and 100 observations
+assets = np.random.rand(100, 10)
 sol_size = assets.shape[1]
 pop_size = 100
 rounds = 100
 min_gens = 20
 early_stopping = 10
-min_thresh = 0.001
+min_thresh = 0.01
 
-# Run the DFO optimization algorithm
-best_fit, best_sol = vo.DFO_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_stopping, min_thresh)
+# Run the DE optimization algorithm
+hof_fit, hof_pop = vo.DFO_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_stopping, min_thresh)
 
-print(f"Best fitness: {best_fit[-1]}")
-print(f"Best solution: {best_sol[-1]}")
+print(f"Best fitness: {hof_fit[-1]}")
+print(f"Best solution: {hof_pop[-1]}")
 ```
 
 ## Contributing
