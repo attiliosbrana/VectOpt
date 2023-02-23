@@ -6,9 +6,21 @@ DE is an efficient version of Evolutionary Algorithms (EAs) that uses difference
 
 VectOpt is designed to be used for portfolio optimization tasks, such as asset allocation. The library is designed to be computationally efficient, using matrix operations to minimize the use of for-loops, and allowing for parallelization on GPUs.
 
+## Environment
+
+We suggest a conda environment in order to run the Numba-optimized version of VectOpt.
+
+```bash
+conda create --name vectopt_env python=3.10
+conda activate vectopt_env
+conda install numpy=1.22.4 numba=0.55.2 matplotlib=3.6.2
+```
+
 ## Installation [TO BE DONE]
 
-You can install VectOpt using pip:
+For now, we suggest cloning the repository.
+
+In the near future, we will seek installation via pip:
 
 ```bash
 pip install vectopt
