@@ -16,7 +16,7 @@ conda activate vectopt_env
 conda install numpy=1.22.4 numba=0.55.2 matplotlib=3.6.2
 ```
 
-## Installation [TO BE DONE]
+## Installation [pip TBD]
 
 For now, we suggest cloning the repository.
 

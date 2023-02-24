@@ -1,7 +1,40 @@
 import numpy as np
 from numba import njit, prange
 
-#Math utils
+# ==== PORTFOLIO STATS utils ==== #
+
+
+# ==== PORTFOLIO METRICS utils ==== #
+
+@njit
+def portfolio_sharpe(assets, population):
+    """
+    Calculates the Sharpe ratio of a population of portfolio weights.
+    """
+    t_population = np.ascontiguousarray(population.T)
+    dot = vo.get_dot(assets, t_population)
+    ratios = []
+    for i in prange(dot.shape[1]):
+        ratios.append(dot[:, i].mean() / dot[:, i].std())
+    return np.array(ratios)
+
+@njit
+def gini(x): 
+    """
+    Calculates gini of MULTIPLE weight matrices
+    """
+    x = x + 0.0000001
+    x = sort_2d_array(x)
+    n = x.shape[1]
+    index = np.arange(1, n + 1)
+    return np.sum((2 * index - n  - 1) * x, axis = 1) / (n * np.sum(x, axis = 1))
+
+# ==== PORTFOLIO BENCHMARKS utils ==== #
+
+
+
+# ==== MATH utils ==== #
+
 @njit
 def sort_2d_array(x):
     '''Jitted efficient sorting over axis n, of n x m'''
@@ -14,15 +47,6 @@ def sort_2d_array(x):
 def get_dot(a, b):
     '''Jitted dot product'''
     return np.dot(a, b)
-
-@njit
-def gini(x): 
-    '''Calculates gini of MULTIPLE weight matrices'''
-    x = x + 0.0000001
-    x = sort_2d_array(x)
-    n = x.shape[1]
-    index = np.arange(1, n + 1)
-    return np.sum((2 * index - n  - 1) * x, axis = 1) / (n * np.sum(x, axis = 1))
 
 @njit
 def numba_roll(a):
@@ -61,7 +85,9 @@ def clean_pop(pop, min_thresh):
         pop[i] = clean_up_weights(pop[i], min_thresh) 
     return pop
 
-#Optimizer algorithmic utils
+
+# ==== OPTIMIZER utils ==== #
+
 @njit
 def early_stopping_condition(hof_fit, early_stopping):
     '''Function to determine if the algorithm has not improved for n rounds'''
@@ -137,7 +163,9 @@ def init_pop(pop_size, sol_size, assets, get_fitness, min_thresh, max_port, init
     hof_pop = [population[idx]]
     return population, pop_fitness, hof_fit, hof_pop
 
-#####Differential evolutionary
+
+# ==== DIFFERENTIAL EVOLUTIONARY ==== #
+
 @njit
 def trial_population(pop, pop_size, diff_weight):
     '''Creates three population permutations, calculates a midpoint in the triangle''' 
@@ -178,7 +206,9 @@ def DE_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_st
     
     return hof_fit, hof_pop
 
-#####Dispersive flies optimization
+
+# ==== DISPERSIVE FLIES OPTIMIZATION ==== #
+
 @njit
 def best_neighbours(population, pop_fitness):
     '''Compares the neighbours of two populations, selects the best''' 
@@ -231,58 +261,3 @@ def DFO_optim(assets, sol_size, pop_size, rounds, min_gens, get_fitness, early_s
                 break
     
     return hof_fit, hof_pop
-
-    #Describe DE_optim in pseudocode for latex
-    #\begin{algorithm}
-    #\caption{Differential Evolution}
-    #\label{alg:DE}
-    #\begin{algorithmic}[1]
-    #\State \textbf{Input:} $pop\_size$, $sol\_size$, $rounds$, $min\_gens$, $get\_fitness$, $early\_stopping$, $min\_thresh$, $diff\_weight$, $max\_port$, $init\_cases$
-    #\State \textbf{Output:} $hof\_fit$, $hof\_pop$
-    #\State $population$, $pop\_fitness$, $hof\_fit$, $hof\_pop$ = $init\_pop(pop\_size, sol\_size, assets, get\_fitness, min\_thresh, max\_port, init\_cases)$
-    #\For{$i$ in $rounds$}
-    #\State $trial\_pop$ = $trial\_population(population, pop\_size, diff\_weight)$
-    #\State $trial\_pop\_fitness$ = $get\_fitness(assets, trial\_pop)$
-    #\State $population$ = $filter\_pop(pop\_fitness, trial\_pop\_fitness, population, trial\_pop)$
-    #\State $population$ = $clean\_pop(population, min\_thresh)$
-    #\State $pop\_fitness$ = $get\_fitness(assets, population)$
-    #\State $hof\_fit$, $hof\_pop$ = $hall\_of\_fame(population, pop\_fitness, hof\_fit, hof\_pop)$
-    #\If{$i$ > $min\_gens$}
-    #\State \textbf{if} $early\_stopping\_condition(hof\_fit, early\_stopping)$ \textbf{break}
-    #\EndIf
-    #\EndFor
-    #\State \textbf{return} $hof\_fit$, $hof\_pop$
-    #\end{algorithmic}
-    #\end{algorithm}
-
-    #Package import for latex
-    #\usepackage{algorithm}
-    #\usepackage{algorithmic}
-    #\usepackage{algpseudocode}
-
-    
-
-    #Describe DFO_optim in pseudocode for latex
-    #\begin{algorithm}
-    #\caption{Dispersive Flies Optimization}
-    #\label{alg:DFO}
-    #\begin{algorithmic}[1]
-    #\State \textbf{Input:} $pop\_size$, $sol\_size$, $rounds$, $min\_gens$, $get\_fitness$, $early\_stopping$, $min\_thresh$, $move\_amount$, $disturb\_thresh$, $max\_port$, $init\_cases$
-    #\State \textbf{Output:} $hof\_fit$, $hof\_pop$
-    #\State $population$, $pop\_fitness$, $hof\_fit$, $hof\_pop$ = $init\_pop(pop\_size, sol\_size, assets, get\_fitness, min\_thresh, max\_port, init\_cases)$
-    #\For{$i$ in $rounds$}
-    #\State $best$ = $hof\_pop[-1]$
-    #\State $trial\_pop$ = $best\_neighbours(population, pop\_fitness)$
-    #\State $population$ = $trial\_pop * (1 - move\_amount) + best * move\_amount$
-    #\State $trial\_pop$ = $new\_portfolio\_batch(pop\_size, sol\_size, min\_thresh, max\_port)$
-    #\State $population$ = $crossover(population, pop\_size, trial\_pop, disturb\_thresh)$
-    #\State $population$ = $clean\_pop(population, min\_thresh)$
-    #\State $pop\_fitness$ = $get\_fitness(assets, population)$
-    #\State $hof\_fit$, $hof\_pop$ = $hall\_of\_fame(population, pop\_fitness, hof\_fit, hof\_pop)$
-    #\If{$i$ > $min\_gens$}
-    #\State \textbf{if} $early\_stopping\_condition(hof\_fit, early\_stopping)$ \textbf{break}
-    #\EndIf
-    #\EndFor
-    #\State \textbf{return} $hof\_fit$, $hof\_pop$
-    #\end{algorithmic}
-    #\end{algorithm}
