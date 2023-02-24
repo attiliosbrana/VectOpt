@@ -12,7 +12,7 @@ def portfolio_sharpe(assets, population):
     Calculates the Sharpe ratio of a population of portfolio weights.
     """
     t_population = np.ascontiguousarray(population.T)
-    dot = vo.get_dot(assets, t_population)
+    dot = get_dot(assets, t_population)
     ratios = []
     for i in prange(dot.shape[1]):
         ratios.append(dot[:, i].mean() / dot[:, i].std())
